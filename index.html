@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jake's Work To-Do List</title>
+  <style>
+    :root {
+      --bg: #f3f6fb;
+      --card: #ffffff;
+      --primary: #2563eb;
+      --urgent: #dc2626;
+      --border: #e5e7eb;
+      --text: #111827;
+      --muted: #6b7280;
+    }
+
+    body.dark {
+      --bg: #0f172a;
+      --card: #020617;
+      --text: #e5e7eb;
+      --border: #1e293b;
+      --muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 40px 16px;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .todo-container {
+      max-width: 700px;
+      margin: 0 auto;
+      background: var(--card);
+      padding: 24px;
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      gap: 10px;
+    }
+
+    .add-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-size: 0.95rem;
+      background: var(--card);
+      color: var(--text);
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+      background: #f1f5f9;
+    }
+
+    .add-btn {
+      background: var(--primary);
+      color: white;
+      font-weight: 600;
+    }
+
+    ul { list-style: none; padding: 0; margin: 0; }
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      margin-bottom: 8px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #fafafa;
+    }
+
+    body.dark li { background: #020617; }
+
+    li.urgent {
+      border-left: 5px solid var(--urgent);
+      background: #fef2f2;
+    }
+
+    body.dark li.urgent { background: #3f1d1d; }
+
+    .text { flex: 1; }
+
+    footer {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="todo-container">
+    <h1>Jake's Work To-Do List</h1>
+
+    <div class="controls">
+      <button onclick="toggleDarkMode()">🌙 Dark Mode</button>
+      <select id="sectionSelect">
+        <option value="today">Today</option>
+        <option value="week">This Week</option>
+      </select>
+    </div>
+
+    <div class="add-row">
+      <input id="todoInput" type="text" placeholder="Add a new task…" onkeypress="handleEnter(event)" />
+      <button class="add-btn" onclick="addTodo()">Add</button>
+    </div>
+
+    <ul id="todoList"></ul>
+
+    <footer>Auto-saves • Prioritized • Focused<br/>Created by Jake Mulkey</footer>
+  </div>
+
+  <script>
+    const list = document.getElementById('todoList');
+
+    function save() {
+      localStorage.setItem('todos', list.innerHTML);
+      localStorage.setItem('dark', document.body.classList.contains('dark'));
+    }
+
+    function load() {
+      list.innerHTML = localStorage.getItem('todos') || '';
+      if (localStorage.getItem('dark') === 'true') document.body.classList.add('dark');
+    }
+
+    function handleEnter(e) {
+      if (e.key === 'Enter') addTodo();
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark');
+      save();
+    }
+
+    function addTodo() {
+      const input = document.getElementById('todoInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const li = document.createElement('li');
+
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.onclick = () => { li.remove(); save(); };
+
+      const span = document.createElement('span');
+      span.className = 'text';
+      span.textContent = `[${sectionSelect.value}] ${text}`;
+
+      const upBtn = document.createElement('button');
+      upBtn.textContent = '↑';
+      upBtn.onclick = () => { if (li.previousElementSibling) list.insertBefore(li, li.previousElementSibling); save(); };
+
+      const downBtn = document.createElement('button');
+      downBtn.textContent = '↓';
+      downBtn.onclick = () => { if (li.nextElementSibling) list.insertBefore(li.nextElementSibling, li); save(); };
+
+      const urgentBtn = document.createElement('button');
+      urgentBtn.textContent = 'Urgent';
+      urgentBtn.onclick = () => { li.classList.toggle('urgent'); save(); };
+
+      li.append(checkbox, span, upBtn, downBtn, urgentBtn);
+      list.appendChild(li);
+      input.value = '';
+      save();
+    }
+
+    load();
+  </script>
+</body>
+</html>
